@@ -14,6 +14,8 @@ router.patch(
   eventController.updateEvent
 );
 
+router.get('/:id/searchGuest', eventController.searchGuestInEvent);
+
 router
   .route('/')
   .get(eventController.getAllEvents)

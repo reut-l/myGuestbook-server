@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     unique: true,
-    sparse: true,
+    required: [true, 'Please provide your phone'],
     validate: [
       validator.isMobilePhone,
       'Please enter a valid mobile phone number',
@@ -91,33 +91,33 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('eventsAsGuest')) return next();
+// userSchema.pre('save', async function (next) {
+//   if (!this.isModified('eventsAsGuest')) return next();
 
-  const eventId = this.eventsAsGuest[this.eventsAsGuest.length - 1];
-  await Event.findByIdAndUpdate(eventId, { $addToSet: { guests: this._id } });
-  next();
-});
+//   const eventId = this.eventsAsGuest[this.eventsAsGuest.length - 1];
+//   await Event.findByIdAndUpdate(eventId, { $addToSet: { guests: this._id } });
+//   next();
+// });
 
-userSchema.pre('findOneAndUpdate', async function (next) {
-  if (!this._update.$addToSet.eventsAsGuest) return next();
+// userSchema.pre('findOneAndUpdate', async function (next) {
+//   if (!this._update.$addToSet.eventsAsGuest) return next();
 
-  const docToUpdate = await this.model.findOne(this.getQuery());
+//   const docToUpdate = await this.model.findOne(this.getQuery());
 
-  const eventId = this._update.$addToSet.eventsAsGuest;
+//   const eventId = this._update.$addToSet.eventsAsGuest;
 
-  await Event.findByIdAndUpdate(eventId, {
-    $addToSet: { guests: docToUpdate._id },
-  });
-  next();
-});
+//   await Event.findByIdAndUpdate(eventId, {
+//     $addToSet: { guests: docToUpdate._id },
+//   });
+//   next();
+// });
 
 userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
 
-userSchema.pre(/^find/, function (next) {
+userSchema.pre(/^find/, async function (next) {
   this.populate({
     path: 'eventsAsGuest',
     select: 'name imageCover',
@@ -158,6 +158,21 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 1000 * 60 * 15;
 
   return resetToken;
+};
+
+userSchema.statics.addEventsAsGuest = async function (user) {
+  const events = await Event.searchGuest(user.phone);
+  const eventsIds = events.map((el) => el._id);
+
+  const newUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      eventsAsGuest: eventsIds,
+    },
+    { new: true }
+  );
+
+  return newUser;
 };
 
 const User = mongoose.model('User', userSchema);

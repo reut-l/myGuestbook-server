@@ -34,7 +34,7 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
+  let newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
@@ -45,6 +45,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     eventsAsGuest: req.body.eventsAsGuest,
     eventsAsCreator: req.body.eventsAsCreator,
   });
+
+  newUser = await User.addEventsAsGuest(newUser);
 
   const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();
@@ -59,11 +61,13 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Please provide email and password', 400));
   }
 
-  const user = await User.findOne({ email }).select('+password');
+  let user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
+
+  user = await User.addEventsAsGuest(user);
 
   createSendToken(user, 200, req, res);
 });

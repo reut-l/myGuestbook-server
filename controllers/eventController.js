@@ -1,3 +1,4 @@
+const { contentSecurityPolicy } = require('helmet');
 const multer = require('multer');
 const sharp = require('sharp');
 const Event = require('../models/eventModel');
@@ -33,6 +34,21 @@ exports.resizeImageCover = catchAsync(async (req, res, next) => {
     .toFile(`public/img/eventsCovers/${req.body.imageCover}`);
 
   next();
+});
+
+exports.searchGuestInEvent = catchAsync(async (req, res) => {
+  const phone = req.query.phone;
+  const eventId = req.params.id;
+
+  let doc = await Event.searchGuest(phone, eventId);
+
+  res.status(200).json({
+    status: 'success',
+    results: doc.length,
+    data: {
+      data: doc,
+    },
+  });
 });
 
 exports.getAllEvents = crud.getAll(Event);

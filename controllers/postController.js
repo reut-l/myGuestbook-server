@@ -69,7 +69,7 @@ exports.like = (addlike) => {
   });
 };
 
-exports.search = catchAsync(async (req, res, next) => {
+exports.search = catchAsync(async (req, res) => {
   const doc = await Post.search(req.query);
 
   res.status(200).json({

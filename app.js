@@ -90,7 +90,7 @@ app.use(
 app.use('/api/v1/posts', postRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/events', eventRouter);
-app.use('/api/v1/photos', photoRouter);
+// app.use('/api/v1/photos', photoRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

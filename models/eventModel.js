@@ -57,6 +57,20 @@ const eventSchema = new mongoose.Schema(
 
 eventSchema.index({ date: -1 });
 
+eventSchema.statics.searchGuest = async function (phone, event) {
+  let pipeline = [];
+
+  if (event) {
+    const eventId = mongoose.Types.ObjectId(event);
+    pipeline.push({ $match: { _id: eventId } });
+  }
+
+  pipeline.push({ $match: { guestsPhones: phone } });
+
+  const doc = await this.aggregate(pipeline);
+  return doc;
+};
+
 eventSchema.pre('save', async function (next) {
   await mongoose.model('User').findByIdAndUpdate(this.user, {
     $addToSet: { eventsAsCreator: this._id },

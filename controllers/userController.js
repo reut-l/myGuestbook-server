@@ -58,7 +58,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.deleteMe = catchAsync(async (req, res, next) => {
+exports.deleteMe = catchAsync(async (req, res) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
 
   res.status(204).json({
@@ -73,6 +73,34 @@ exports.createUser = (req, res) => {
     message: 'This rout is not defined! Please use /signup instead',
   });
 };
+
+// exports.checkIfNewEventsAsGuest = catchAsync(async (req, res, next) => {
+//   const { eventsAsGuest, phone, _id } = req.user;
+//   const events = await Event.searchGuest(phone);
+//   const updatedEventsAsGuest = events.map((el) => el._id);
+
+//   const newEventsAsGuest = updatedEventsAsGuest.filter(
+//     (el) => !eventsAsGuest.includes(el)
+//   );
+
+//   if (newEventsAsGuest) {
+//     const user = await User.findByIdAndUpdate(_id, {
+//       eventsAsGuest: updatedEventsAsGuest,
+//     });
+
+//     return res.status(200).json({
+//       status: 'success',
+//       data: {
+//         user,
+//       },
+//     });
+//   }
+
+//   res.status(200).json({
+//     status: 'success',
+//     data: null,
+//   });
+// });
 
 exports.getUser = crud.getOne(User);
 exports.getAllUsers = crud.getAll(User);
