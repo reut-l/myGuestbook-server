@@ -37,6 +37,10 @@ router
     authController.onlyMe(Post),
     postController.updatePost
   )
-  .delete(authController.protect, postController.deletePost);
+  .delete(
+    authController.protect,
+    authController.onlyMe(Post),
+    postController.deletePost
+  );
 
 module.exports = router;

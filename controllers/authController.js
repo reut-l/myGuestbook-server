@@ -1,5 +1,9 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -239,4 +243,32 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   createSendToken(user, 200, req, res);
+});
+
+exports.getCode = catchAsync(async (req, res) => {
+  const data = await client.verify
+    .services(process.env.TWILIO_VERIFICATION_SID)
+    .verifications.create({
+      to: `+${req.query.phonenumber}`,
+      channel: req.query.channel,
+    });
+
+  return res.status(200).json({
+    status: 'success',
+    data,
+  });
+});
+
+exports.verifyCode = catchAsync(async (req, res) => {
+  const data = await client.verify
+    .services(process.env.TWILIO_VERIFICATION_SID)
+    .verificationChecks.create({
+      to: `+${req.query.phonenumber}`,
+      code: req.query.code,
+    });
+
+  return res.status(200).json({
+    status: 'success',
+    data,
+  });
 });

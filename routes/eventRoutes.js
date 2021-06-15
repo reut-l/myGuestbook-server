@@ -16,6 +16,13 @@ router.patch(
 
 router.get('/:id/searchGuest', eventController.searchGuestInEvent);
 
+router.get(
+  '/:id/myEvent',
+  authController.protect,
+  authController.onlyMe(Event),
+  eventController.getFullEvent
+);
+
 router
   .route('/')
   .get(eventController.getAllEvents)
@@ -31,7 +38,7 @@ router
   )
   .delete(
     authController.protect,
-    authController.restrictTo('admin'),
+    authController.onlyMe(Event),
     eventController.deleteEvent
   );
 

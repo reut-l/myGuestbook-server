@@ -103,7 +103,12 @@ postSchema.statics.search = async function (queryStr) {
     }
   );
 
-  const doc = await this.aggregate(pipeline);
+  let doc = await this.aggregate(pipeline);
+  doc = doc.map((el) => {
+    el.user = el.user[0];
+    return el;
+  });
+
   return doc;
 };
 

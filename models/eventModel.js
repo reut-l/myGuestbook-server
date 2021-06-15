@@ -29,16 +29,19 @@ const eventSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    guestsPhones: [
-      {
-        type: String,
-        trim: true,
-        validate: [
-          validator.isMobilePhone,
-          'Please enter a valid mobile phone number',
-        ],
-      },
-    ],
+    guestsPhones: {
+      type: [
+        {
+          type: String,
+          trim: true,
+          validate: [
+            validator.isMobilePhone,
+            'Please enter a valid mobile phone number',
+          ],
+        },
+      ],
+      select: false,
+    },
     guests: [
       {
         type: mongoose.Schema.ObjectId,

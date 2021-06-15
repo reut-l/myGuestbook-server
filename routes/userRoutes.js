@@ -9,6 +9,9 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 router.post('/isLoggedIn', authController.isLoggedIn);
 
+router.get('/getPhoneCode', authController.getCode);
+router.get('/verifyPhoneCode', authController.verifyCode);
+
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 

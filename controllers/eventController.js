@@ -51,8 +51,10 @@ exports.searchGuestInEvent = catchAsync(async (req, res) => {
   });
 });
 
+exports.getFullEvent = crud.getOne(Event, null, '+guestsPhones');
+
 exports.getAllEvents = crud.getAll(Event);
-exports.getEvent = crud.getOne(Event, { path: 'owners' });
+exports.getEvent = crud.getOne(Event);
 exports.createEvent = crud.createOne(Event);
 exports.updateEvent = crud.updateOne(Event);
 exports.deleteEvent = crud.deleteOne(Event);

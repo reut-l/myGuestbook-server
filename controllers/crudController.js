@@ -130,10 +130,12 @@ exports.createOne = (Model) =>
     });
   });
 
-exports.getOne = (Model, popOptions) =>
+exports.getOne = (Model, popOptions, selectOptions) =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
+    if (selectOptions) query = query.select(selectOptions);
     if (popOptions) query = query.populate(popOptions);
+
     const doc = await query;
 
     if (!doc) {
