@@ -3,6 +3,9 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 
+// CRUD general functions for ths Models
+
+// Helper functions
 const removeDuplicatesInArr = (obj) => {
   Object.entries(obj).forEach(([key, value]) => {
     if (typeof value === 'object' && value !== null) {
@@ -49,10 +52,12 @@ exports.deleteOne = (Model) =>
 
 exports.updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
+    // 1) Remove duplicated from array fields
     req.body = removeDuplicatesInArr(req.body);
 
     const fields = Object.keys(req.body);
 
+    // 2) Select all the array fields in a Model
     let arrFields = [];
     if (fields.length > 0) {
       for (i = 0; i < fields.length; i++) {
@@ -62,8 +67,10 @@ exports.updateOne = (Model) =>
       }
     }
 
+    // 3) Remove the array fields
     const filteredBody = filterObj(req.body, arrFields);
 
+    // 4) Find and Update the doc with non-array fields
     let doc;
     if (Object.keys(filteredBody).length > 0) {
       doc = await Model.findByIdAndUpdate(req.params.id, filteredBody, {
@@ -72,6 +79,7 @@ exports.updateOne = (Model) =>
       });
     }
 
+    // 5) Find and Update the doc with the array fields, adding only new elements fron the array
     if (arrFields.length > 0) {
       for (i = 0; i < arrFields.length; i++) {
         const field = arrFields[i];
@@ -101,26 +109,10 @@ exports.updateOne = (Model) =>
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     req.body = removeDuplicatesInArr(req.body);
-    const arrFields = selectFieldsWithArray(req.body);
-    const filteredBody = filterObj(req.body, arrFields);
 
-    if (req.params.eventId) filteredBody.event = req.params.eventId;
+    if (req.params.eventId) req.body.event = req.params.eventId;
 
-    let doc = await Model.create(filteredBody);
-
-    if (arrFields.length > 0) {
-      for (i = 0; i < arrFields.length; i++) {
-        const field = arrFields[i];
-        const input = req.body[field];
-        doc = await Model.findByIdAndUpdate(
-          doc._id,
-          {
-            [field]: input,
-          },
-          { new: true, runValidators: true }
-        );
-      }
-    }
+    let doc = await Model.create(req.body);
 
     res.status(201).json({
       status: 'success',
@@ -152,6 +144,7 @@ exports.getOne = (Model, popOptions, selectOptions) =>
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
+    // Filtering and sorting according to the request
     const features = new APIFeatures(Model.find({}), req.query).filter().sort();
     const doc = await features.query;
 

@@ -38,6 +38,7 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
   next();
 });
 
+// Like or unlike (according to the boolean addlike parameter)
 exports.like = (addlike) => {
   return catchAsync(async (req, res, next) => {
     const doc = await Post.findById(req.params.id);
@@ -69,6 +70,7 @@ exports.like = (addlike) => {
   });
 };
 
+// Search withing posts (for more details on this static function- see Post model)
 exports.search = catchAsync(async (req, res) => {
   const doc = await Post.search(req.query);
 

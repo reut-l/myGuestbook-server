@@ -17,6 +17,7 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
+  // 1) Create error if user try to update password data through this route
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -25,10 +26,13 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       )
     );
   }
-  const filteredBody = filterObj(req.body, 'name', 'email', 'phone');
+
+  // 2) Filter out unwanted fields names that are not allowed to be updated
+  const filteredBody = filterObj(req.body, 'email', 'phone');
 
   let updatedUser;
 
+  // 3) Update user doc
   if (Object.keys(filteredBody).length > 0) {
     updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
       new: true,
@@ -36,6 +40,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     });
   }
 
+  // $) Update user doc array fields
   const arrFields = ['eventsAsGuest', 'eventsAsCreator'];
 
   for (i = 0; i < arrFields.length; i++) {
@@ -73,34 +78,6 @@ exports.createUser = (req, res) => {
     message: 'This rout is not defined! Please use /signup instead',
   });
 };
-
-// exports.checkIfNewEventsAsGuest = catchAsync(async (req, res, next) => {
-//   const { eventsAsGuest, phone, _id } = req.user;
-//   const events = await Event.searchGuest(phone);
-//   const updatedEventsAsGuest = events.map((el) => el._id);
-
-//   const newEventsAsGuest = updatedEventsAsGuest.filter(
-//     (el) => !eventsAsGuest.includes(el)
-//   );
-
-//   if (newEventsAsGuest) {
-//     const user = await User.findByIdAndUpdate(_id, {
-//       eventsAsGuest: updatedEventsAsGuest,
-//     });
-
-//     return res.status(200).json({
-//       status: 'success',
-//       data: {
-//         user,
-//       },
-//     });
-//   }
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: null,
-//   });
-// });
 
 exports.getUser = crud.getOne(User);
 exports.getAllUsers = crud.getAll(User);

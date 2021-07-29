@@ -36,6 +36,7 @@ exports.resizeImageCover = catchAsync(async (req, res, next) => {
   next();
 });
 
+// Check if user is in the event guests's phone numbers
 exports.searchGuestInEvent = catchAsync(async (req, res) => {
   const phone = req.query.phone;
   const eventId = req.params.id;
@@ -51,6 +52,7 @@ exports.searchGuestInEvent = catchAsync(async (req, res) => {
   });
 });
 
+// Get event, including guests phone numbers
 exports.getFullEvent = crud.getOne(Event, null, '+guestsPhones');
 
 exports.getAllEvents = crud.getAll(Event);

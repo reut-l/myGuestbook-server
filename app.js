@@ -13,7 +13,6 @@ const globalErrorHandler = require('./controllers/errorController');
 const postRouter = require('./routes/postRoutes');
 const userRouter = require('./routes/userRoutes');
 const eventRouter = require('./routes/eventRoutes');
-const photoRouter = require('./routes/photoRoutes');
 
 // Start express app
 const app = express();
@@ -53,6 +52,8 @@ var corsOptions = {
   ],
 };
 
+// 1) GLOBAL MIDDLEWARES
+// Implement CORS
 app.use(cors(corsOptions));
 
 // Serving static files
@@ -87,10 +88,10 @@ app.use(
   })
 );
 
+// 2) ROUTES
 app.use('/api/v1/posts', postRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/events', eventRouter);
-// app.use('/api/v1/photos', photoRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

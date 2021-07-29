@@ -1,3 +1,4 @@
+// A Class that modifies query string to add correctly additional features to the original query
 class APIFeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -7,8 +8,6 @@ class APIFeatures {
   filter() {
     const queryObj = { ...this.queryString };
     delete queryObj['sort'];
-    //const excludedFields = ['sort'];
-    //excludedFields.forEach((el) => delete queryObj[el]);
 
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);

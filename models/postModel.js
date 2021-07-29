@@ -33,14 +33,19 @@ const postSchema = new mongoose.Schema(
 );
 postSchema.index({ event: 1 });
 
+// VIRTUAL POPULATE
 postSchema.virtual('numberOfLikes').get(function () {
   return this.likes.length;
 });
 
+// STATIC FUNCTIONS
+// 1) Search posts
 postSchema.statics.search = async function (queryStr) {
   let pipeline = [];
   let events = [];
 
+  // a. Search posts that user created / user liked / of an event
+  // First, filter only the relevant events (that user created or attended or simply the event that is queried if the search is for posts of an event)
   if (queryStr.user || queryStr.likes) {
     events = await findUserEvents(queryStr);
   } else if (queryStr.event) {
@@ -54,6 +59,7 @@ postSchema.statics.search = async function (queryStr) {
     },
   });
 
+  // Then, create the filters: user who created posts/ user who liked posts, and push them to the pipeline
   const userFilter = createFilter('user', queryStr);
   const likesFilter = createFilter('likes', queryStr);
 
@@ -65,6 +71,7 @@ postSchema.statics.search = async function (queryStr) {
     pipeline.push({ $match: likesFilter });
   }
 
+  // b. Search whithin the filtered posts, posts that created by user (by full or partial name /phone/ email) or search all in case there is no term or it's not relevant.
   const searchValue = queryStr.term;
 
   const regex =
@@ -112,6 +119,7 @@ postSchema.statics.search = async function (queryStr) {
   return doc;
 };
 
+// helper functions
 const findUserEvents = async (query) => {
   const user = query.user ? query.user : query.likes;
 

@@ -76,6 +76,8 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// DOCUMENT MIDDLEWARES
+//  1) Encrypting password, and emptying password confirm (after they were compared)
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
@@ -84,6 +86,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// 2) Updating when password was changed (will be used when reset password token is sent, to check if the token was created before)
 userSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
@@ -91,32 +94,14 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-// userSchema.pre('save', async function (next) {
-//   if (!this.isModified('eventsAsGuest')) return next();
-
-//   const eventId = this.eventsAsGuest[this.eventsAsGuest.length - 1];
-//   await Event.findByIdAndUpdate(eventId, { $addToSet: { guests: this._id } });
-//   next();
-// });
-
-// userSchema.pre('findOneAndUpdate', async function (next) {
-//   if (!this._update.$addToSet.eventsAsGuest) return next();
-
-//   const docToUpdate = await this.model.findOne(this.getQuery());
-
-//   const eventId = this._update.$addToSet.eventsAsGuest;
-
-//   await Event.findByIdAndUpdate(eventId, {
-//     $addToSet: { guests: docToUpdate._id },
-//   });
-//   next();
-// });
-
+// QUERY MIDDLEWARES
+//  1) Filter only active users (users that didn't close their account)
 userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
 
+// 2) Populate attended events and created events' relevant fields
 userSchema.pre(/^find/, async function (next) {
   this.populate({
     path: 'eventsAsGuest',
@@ -129,6 +114,8 @@ userSchema.pre(/^find/, async function (next) {
   next();
 });
 
+// METHODS
+// 1) Checks if the password inserted matches the user password
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
@@ -136,6 +123,7 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
+// 2) Checks if the reset password token was created before the password change attempt
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
@@ -147,6 +135,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
+// 3) Create a password reset token, which will expire in 15 minutes
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
@@ -160,19 +149,14 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-userSchema.statics.addEventsAsGuest = async function (user) {
-  const events = await Event.searchGuest(user.phone);
+// 4) Check for events that the user is their guest and add to his attended events
+userSchema.methods.addEventsAsGuest = async function () {
+  const events = await Event.searchGuest(this.phone);
   const eventsIds = events.map((el) => el._id);
 
-  const newUser = await User.findByIdAndUpdate(
-    user._id,
-    {
-      eventsAsGuest: eventsIds,
-    },
-    { new: true }
-  );
+  this.eventsAsGuest = eventsIds;
 
-  return newUser;
+  return this;
 };
 
 const User = mongoose.model('User', userSchema);

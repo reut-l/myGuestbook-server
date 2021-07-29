@@ -1,3 +1,4 @@
+// A class that extend Error class and addnig specipic app features to all operational (controlled) errors
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
