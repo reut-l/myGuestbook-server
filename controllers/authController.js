@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const client = require('twilio')(
@@ -54,7 +55,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   newUser = await newUser.addEventsAsGuest();
 
   // send welcome email
-  const url = `${req.protocol}://${req.get('host')}/me`;
+  const url = `${req.protocol}://${req.get('host')}/`;
   await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, req, res);
@@ -209,10 +210,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `${req.protocol}://${req.get(
-      'host'
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL = `${req.get('origin')}/resetPassword/${resetToken}`;
 
+    console.log(resetURL);
     await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
@@ -242,10 +242,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  // 2) If token has not expired, and there is user, set the new password
-  // 3) Update changedPasswordAt property for the user
   if (!user) return next(new AppError('Token is invalid or has expired', 400));
 
+  // 2) If token has not expired, and there is user, set the new password
+  // 3) Update changedPasswordAt property for the user
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
