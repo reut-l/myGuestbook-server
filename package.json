@@ -4,9 +4,9 @@
   "description": "FlashBook RESTFull api",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "dev": "SET NODE_ENV=development&&nodemon server.js",
-    "start:prod": "SET NODE_ENV=production&&nodemon server.js"
+    "start": "node server.js",
+    "dev": "SET NODE_ENV=development&&server.js",
+    "start:prod": "SET NODE_ENV=production&&server.js"
   },
   "author": "Reut Lewinthal",
   "license": "ISC",
