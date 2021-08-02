@@ -29,7 +29,11 @@ app.enable('trust proxy');
 
 // app.options('*', cors());
 
-var whitelist = ['http://localhost:3000', 'http://localhost:3001'];
+var whitelist = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://powerful-hamlet-34092.herokuapp.com/',
+];
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
