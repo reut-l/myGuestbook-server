@@ -1,0 +1,3 @@
+BE MY GUEST in my online guestbook of EVENT_NAME and click this link EVENT_LINK
+See you there!
+EVENT_CREATOR

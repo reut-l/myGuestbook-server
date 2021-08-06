@@ -16,18 +16,6 @@ const removeDuplicatesInArr = (obj) => {
   return obj;
 };
 
-const selectFieldsWithArray = (obj) => {
-  const arrKeys = Object.keys(
-    Object.fromEntries(
-      Object.entries(obj).filter(
-        ([key, value]) => typeof value === 'object' && value !== null
-      )
-    )
-  );
-
-  return arrKeys;
-};
-
 const filterObj = (obj, notAllowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {

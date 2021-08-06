@@ -52,6 +52,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     eventsAsCreator: req.body.eventsAsCreator,
   });
 
+  // check for events that the user is their guest and add them to the user's attended events
   newUser = await newUser.addEventsAsGuest();
 
   // send welcome email
@@ -277,7 +278,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 // PHONE VERIFICATION FUNCTIONS
 // 1) Send code by SMS to the phone number that user inputed
 exports.getCode = catchAsync(async (req, res) => {
-  const data = await client.verify
+  await client.verify
     .services(process.env.TWILIO_VERIFICATION_SID)
     .verifications.create({
       to: `+${req.query.phonenumber}`,
@@ -286,7 +287,6 @@ exports.getCode = catchAsync(async (req, res) => {
 
   return res.status(200).json({
     status: 'success',
-    data,
   });
 });
 

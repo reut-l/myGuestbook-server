@@ -155,9 +155,15 @@ userSchema.methods.addEventsAsGuest = async function () {
   const events = await Event.searchGuest(this.phone);
   const eventsIds = events.map((el) => el._id);
 
-  this.eventsAsGuest = eventsIds;
+  const doc = await User.findByIdAndUpdate(
+    this._id,
+    {
+      $addToSet: { eventsAsGuest: eventsIds },
+    },
+    { new: true }
+  );
 
-  return this;
+  return doc;
 };
 
 const User = mongoose.model('User', userSchema);

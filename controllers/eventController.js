@@ -1,8 +1,12 @@
-const { contentSecurityPolicy } = require('helmet');
 const multer = require('multer');
 const sharp = require('sharp');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 const Event = require('../models/eventModel');
 const catchAsync = require('../utils/catchAsync');
+const createSmsBody = require('../utils/sms').createSmsBody;
 const crud = require('./crudController');
 
 const multerStorage = multer.memoryStorage();
@@ -49,6 +53,29 @@ exports.searchGuestInEvent = catchAsync(async (req, res) => {
     data: {
       data: doc,
     },
+  });
+});
+
+// Send SMSs to the guests of the event
+exports.sendSmsToGuests = catchAsync(async (req, res) => {
+  const event = await Event.findById(req.params.id)
+    .select('+guestsPhones')
+    .populate('user');
+
+  const numbers = event.guestsPhones;
+  const bindings = numbers.map((number) => {
+    return JSON.stringify({ binding_type: 'sms', address: number });
+  });
+
+  const service = client.notify.services(process.env.TWILIO_NOTIFY_SERVICE_SID);
+
+  await service.notifications.create({
+    toBinding: bindings,
+    body: createSmsBody('eventToGuests', event),
+  });
+
+  return res.status(200).json({
+    status: 'success',
   });
 });
 

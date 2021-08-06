@@ -5,6 +5,13 @@ const Event = require('../models/eventModel');
 
 const router = express.Router();
 
+router.get(
+  '/:id/sendSmsToGuests',
+  authController.protect,
+  authController.onlyMe(Event),
+  eventController.sendSmsToGuests
+);
+
 router.patch(
   '/:id/uploadCover',
   authController.protect,
