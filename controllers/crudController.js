@@ -132,6 +132,7 @@ exports.getOne = (Model, popOptions, selectOptions) =>
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
+    console.log(req.query);
     // Filtering and sorting according to the request
     const features = new APIFeatures(Model.find({}), req.query).filter().sort();
     const doc = await features.query;

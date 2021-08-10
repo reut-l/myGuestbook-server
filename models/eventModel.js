@@ -1,56 +1,50 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-const eventSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, 'Please provide a name for the event'],
-      trim: true,
-    },
-    owner: {
-      type: String,
-      trim: true,
-    },
-    user: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-      required: [true, 'An event must be created by a specific user'],
-    },
-    date: {
-      type: Date,
-      required: [true, "Please provide the event's date"],
-    },
-    timeOfDay: {
-      type: String,
-      enum: ['morning', 'afternoon', 'evening'],
-    },
-    venue: {
-      type: String,
-      trim: true,
-    },
-    guestsPhones: {
-      type: [
-        {
-          type: String,
-          trim: true,
-          validate: [
-            validator.isMobilePhone,
-            'Please enter a valid mobile phone number',
-          ],
-        },
-      ],
-      select: false,
-    },
-    imageCover: {
-      type: String,
-    },
+const eventSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Please provide a name for the event'],
+    trim: true,
   },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
-);
+  owner: {
+    type: String,
+    trim: true,
+  },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'An event must be created by a specific user'],
+  },
+  date: {
+    type: Date,
+    required: [true, "Please provide the event's date"],
+  },
+  timeOfDay: {
+    type: String,
+    enum: ['morning', 'afternoon', 'evening'],
+  },
+  venue: {
+    type: String,
+    trim: true,
+  },
+  guestsPhones: {
+    type: [
+      {
+        type: String,
+        trim: true,
+        validate: [
+          validator.isMobilePhone,
+          'Please enter a valid mobile phone number',
+        ],
+      },
+    ],
+    select: false,
+  },
+  imageCover: {
+    type: String,
+  },
+});
 
 eventSchema.index({ date: -1 });
 

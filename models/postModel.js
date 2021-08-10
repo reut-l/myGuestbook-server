@@ -1,36 +1,38 @@
 const mongoose = require('mongoose');
 
-const postSchema = new mongoose.Schema(
-  {
-    image: {
-      type: String,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-    },
-    user: {
+const postSchema = new mongoose.Schema({
+  image: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'A post must belong to a user.'],
+  },
+  event: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
+    required: [true, 'A post must belong to an event.'],
+  },
+  likes: [
+    {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: [true, 'A post must belong to a user.'],
     },
-    event: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Event',
-      required: [true, 'A post must belong to an event.'],
-    },
-    likes: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-      },
-    ],
+  ],
+});
+
+postSchema.set('toJSON', {
+  virtuals: true,
+  transform: function (doc, ret) {
+    delete ret.id;
   },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
-);
+});
+
 postSchema.index({ event: 1 });
 
 // VIRTUAL POPULATE
@@ -96,27 +98,17 @@ postSchema.statics.search = async function (queryStr) {
           { 'user.email': { $regex: regex } },
         ],
       },
-    },
-    {
-      $project: {
-        user: {
-          role: 0,
-          eventsAsGuest: 0,
-          eventsAsCreator: 0,
-          active: 0,
-          password: 0,
-        },
-      },
     }
   );
 
-  let doc = await this.aggregate(pipeline);
-  doc = doc.map((el) => {
-    el.user = el.user[0];
-    return el;
+  let docs = await this.aggregate(pipeline);
+  docs = docs.map((doc) => {
+    doc.user = doc.user[0]._id;
+    doc.numberOfLikes = doc.likes.length;
+    return doc;
   });
 
-  return doc;
+  return docs;
 };
 
 // helper functions
