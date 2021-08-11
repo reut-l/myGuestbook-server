@@ -6,7 +6,6 @@ const handleCastErrorDB = (err) => {
 };
 
 const handleDuplicateFieldsDB = (err) => {
-  console.log(err);
   const value = Object.keys(err.keyValue)[0];
   const message =
     value === 'email' || value === 'phone'
